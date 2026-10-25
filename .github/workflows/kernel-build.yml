@@ -97,6 +97,7 @@ jobs:
 
       - name: Configure Kernel (${{ env.DEFCONFIG }})
         run: |
+          set -o pipefail
           export PATH="${{ env.CLANG_DIR }}/bin:$PATH"
           make -C "${{ env.KERNEL_DIR }}" O="${{ env.OUT_DIR }}" \
             ARCH=arm64 \
@@ -104,7 +105,16 @@ jobs:
             LLVM_IAS=1 \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
-            "${{ env.DEFCONFIG }}"
+            V=1 \
+            "${{ env.DEFCONFIG }}" 2>&1 | tee "${{ github.workspace }}/config.log"
+
+      - name: Upload Configure Log On Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-config-failure-log
+          path: ${{ github.workspace }}/config.log
+          if-no-files-found: warn
 
       - name: Build Kernel Image
         run: |
