@@ -1,0 +1,38 @@
+/ {	lcds {
+		lcd_zte_dummy_mipi_fhd: lcd_zte_dummy_mipi_fhd {
+
+			sprd,dsi-work-mode = <1>; /* video burst mode*/
+			sprd,dsi-lane-number = <4>;
+			sprd,dsi-color-format = "rgb888";
+
+			sprd,initial-command = [
+				13 78 00 01 11
+				13 64 00 01 29
+				];
+			sprd,sleep-in-command = [
+				13 0A 00 01 28
+				13 78 00 01 10
+				];
+			sprd,sleep-out-command = [
+				13 78 00 01 11
+				13 64 00 01 29
+				];
+
+			display-timings {
+				native-mode = <&lcd_zte_dummy_mipi_fhd_timing0>;
+				lcd_zte_dummy_mipi_fhd_timing0: timing0 {
+					clock-frequency = <192000000>;
+					hactive = <1080>;
+					vactive = <2408>;
+					hback-porch = <16>;
+					hfront-porch = <156>;
+					vback-porch = <32>;
+					vfront-porch = <52>;
+					hsync-len = <32>;
+					vsync-len = <2>;
+
+				};
+			};
+		};
+	};
+};

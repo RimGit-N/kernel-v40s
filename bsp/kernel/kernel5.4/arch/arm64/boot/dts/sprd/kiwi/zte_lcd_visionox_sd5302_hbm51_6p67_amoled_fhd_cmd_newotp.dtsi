@@ -1,0 +1,109 @@
+/ { lcds {
+	lcd_visionox_sd5302_newotp_mipi_fhd: lcd_visionox_sd5302_newotp_mipi_fhd {
+		zte,lcd-init-code-version = "20220701_V005";
+		zte,lcd-backlight-register-bit-length = <0x0b>;
+		zte,lcm_backlight_curve_mode = "lcd_brightness_max_450_lux";
+		zte,lcd-disable-ssc;
+		zte,panel-name = "lcd_visionox_sd5302_newotp_6p67_mipi_fhd";
+		/*zte,lcd-delay-open-bl-value = <30>;*/
+		zte,lcd-backlight-min-value = <16>;
+		zte,lcd-support-sd5302;
+
+		sprd,dsi-work-mode = <0>; /* cmd mode*/
+		sprd,dsi-lane-number = <4>;
+		sprd,dsi-color-format = "rgb888";
+
+		sprd,phy-bit-clock = <1180000>;	/* kbps */
+		sprd,phy-escape-clock = <20000>;/* kHz */
+
+		sprd,width-mm = <69498>;
+		sprd,height-mm = <154440>;
+
+		sprd,esd-check-enable = <1>;/* 0:close , 1:open */
+		sprd,esd-check-mode = <1>;/* 0:REG ,1:TE  */
+		sprd,esd-check-period = <2000>;
+		sprd,esd-check-register = <0x0A>;
+		sprd,esd-check-value = <0x9C>;
+
+		sprd,reset-on-sequence = <1 10>, <0 10>, <1 80>;
+		sprd,reset-off-sequence = <1 50>, <1 0>, <0 5>;
+		sprd,initial-command = [
+39 00 00 04 F0 A5 0F F0
+39 00 00 02 FD 00
+39 00 00 05 ea 8c f0 3f 3f
+39 00 00 04 C8 33 5A 11/*open demura*/
+39 00 00 02 77 00/*60Hz*/
+39 00 00 03 44 04 b0
+39 00 00 02 35 00
+39 00 00 03 51 00 00
+39 00 00 02 53 24
+39 00 00 02 55 00
+39 00 00 02 fd c0
+39 00 00 26 f5 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+39 00 00 02 fd 00
+05 40 00 01 11
+05 30 00 01 29
+			];
+		sprd,sleep-in-command = [
+			39 00 00 03 51 00 00
+			05 32 00 01 28
+			05 20 00 01 10
+			];
+		sprd,sleep-out-command = [
+			05 50 00 01 11
+			05 14 00 01 29
+			];
+		sprd,doze-in-command = [
+05 20 00 01 28
+39 00 00 03 51 00 00
+39 00 00 02 70 11
+05 01 00 01 29
+			];
+		sprd,doze-out-command = [
+05 C8 00 01 00
+39 00 00 04 F0 A5 0F F0
+39 00 00 02 FD 00
+05 20 00 01 28
+05 28 00 01 10
+39 58 00 02 70 00
+39 00 00 03 51 00 00
+05 50 00 01 11
+05 20 00 01 29
+			];
+
+zte,dimming-open-command = [
+39 C8 00 02 fd 00/*delay 200ms*/
+39 00 00 05 ea 8c f1 06 06
+39 00 00 02 53 2c
+];
+zte,dimming-close-command = [
+39 10 00 02 fd 00/*delay 16ms*/
+39 10 00 02 53 24
+39 00 00 05 ea 8c f0 3f 3f
+];
+
+		display-timings {
+			timing0 {
+				clock-frequency = <192000000>;
+				hactive = <1080>;
+				vactive = <2400>;
+				hback-porch = <0>;
+				hfront-porch = <0>;
+				vback-porch = <0>;
+				vfront-porch = <0>;
+				hsync-len = <0>;
+				vsync-len = <0>;
+			};
+		};
+
+		oled-backlight {
+			default-brightness-level = <816>;
+			sprd,max-level = <2047>;
+			brightness-levels = [
+				39 00 00 03 51 00 00
+				39 00 00 02 53 2C
+			];
+		};
+	};
+};};
+

@@ -1,0 +1,12 @@
+/*
+ * this file is ued to change sprd dtsi which can't be changed by overlay
+ * such as /delete-node/ /delete-property/ and alises
+ */
+
+#include "zte_camera_peony.dtsi"
+#include "zte_lcd.dtsi"
+#include "zte_touchscreen_peony.dtsi"
+#include "zte_fingerprint_peony.dtsi"
+#include "zte_charger_peony.dtsi"
+#include "zte_nfc_peony.dtsi"
+#include "zte_sar.dtsi"

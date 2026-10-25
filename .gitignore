@@ -1,0 +1,34 @@
+# Build output directories
+out/
+out_abi/
+artifacts/
+build.log
+
+# Temporary / intermediate files
+*.o
+*.cmd
+*.ko
+*.mod
+*.mod.c
+*.order
+*.symvers
+*.tmp
+*.orig
+*.rej
+*.bak
+
+# Toolchains and archives
+toolchain/
+clang*.tar.gz
+*.tar.gz
+*.tar.xz
+
+# Editor and OS files
+.vscode/
+.idea/
+*.swp
+*~
+Thumbs.db
+[Dd]esktop.ini
+**/aux.c
+**/aux.h

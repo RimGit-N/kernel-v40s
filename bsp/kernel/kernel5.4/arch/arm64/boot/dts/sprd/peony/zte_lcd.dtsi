@@ -1,0 +1,25 @@
+
+#include "zte_lcd_boe_td4160_boe_6p745_hd.dtsi"
+#include "zte_lcd_boe_td4160_boe_new_6p745_hd.dtsi"
+#include "zte_lcd_skyworth_icnl9916_qunchuang_6p745_hd.dtsi"
+#include "zte_lcd_skyworth_lowbl_icnl9916_qunchuang_6p745_hd.dtsi"
+#include "zte_lcd_huaying_icnl9916_huajiacai_6p745_hd.dtsi"
+#include "zte_lcd_dummy_mipi.dtsi"
+
+&dphy {
+	/delete-property/ sprd,ulps-disabled;
+};
+
+&i2c5 {
+	ti65132b@3e {
+		compatible = "tps,ti65132b";
+		reg = <0x3e>;
+		zte,lcd-bl-vsp-vsn-enhance-enable;
+	};
+};
+
+&panel {
+	avdd-gpio = <&ap_gpio 135 GPIO_ACTIVE_HIGH>;
+	avee-gpio = <&ap_gpio 136 GPIO_ACTIVE_HIGH>;
+	reset-gpio = <&ap_gpio 50 GPIO_ACTIVE_HIGH>;
+};

@@ -1,0 +1,24 @@
+/*
+ * this file is ued to change sprd dtsi which can't be changed by overlay
+ * such as /delete-node/ /delete-property/ and alises
+ */
+#include "zte_lcd.dtsi"
+#include "zte_fingerprint_willow.dtsi"
+#include "zte_touchscreen_willow.dtsi"
+#include "zte_camera_willow.dtsi"
+#include "zte_charger_willow.dtsi"
+/{
+	zte_tp:zte_tp {
+		compatible = "zte_tp";
+		zte,tp_algo;
+		zte,tp_jitter_check = <15>;
+		zte,tp_jitter_timer = <80>;
+		zte,tp_long_press;
+		zte,tp_long_press_timer = <800>;
+		zte,tp_long_press_left_v = <20>;
+		zte,tp_long_press_right_v = <20>;
+		zte,tp_long_press_left_h = <30>; /*camera */
+		zte,tp_long_press_right_h = <20>; /*charger */
+		zte,tp_edge_click_suppression_pixel = <5>;
+	};
+};

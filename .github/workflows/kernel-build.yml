@@ -1,0 +1,172 @@
+name: Build Android Kernel ARM64
+
+on:
+  workflow_dispatch:
+    inputs:
+      defconfig:
+        description: 'Kernel Defconfig'
+        required: true
+        default: 'sprd_sharkl5Pro_defconfig'
+        type: choice
+        options:
+          - sprd_sharkl5Pro_defconfig
+          - gki_defconfig
+          - unisoc_fuzz_ums512_defconfig
+      build_target:
+        description: 'Kernel Image Target'
+        required: true
+        default: 'Image Image.gz'
+        type: string
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+      - 'docs/**'
+
+jobs:
+  build:
+    name: Build Kernel ARM64
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+
+    env:
+      ARCH: arm64
+      KBUILD_BUILD_USER: NevaCPS
+      KBUILD_BUILD_HOST: GitHubActions
+      KERNEL_DIR: bsp/kernel/kernel5.4
+      OUT_DIR: ${{ github.workspace }}/out
+      CLANG_DIR: ${{ github.workspace }}/toolchain/clang-r416183b
+      DEFCONFIG: ${{ inputs.defconfig || 'sprd_sharkl5Pro_defconfig' }}
+      BUILD_TARGET: ${{ inputs.build_target || 'Image Image.gz' }}
+
+    steps:
+      - name: Checkout Kernel Source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Cache Android Clang Toolchain
+        id: cache-toolchain
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CLANG_DIR }}
+          key: clang-r416183b-v1
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            bc \
+            bison \
+            flex \
+            libssl-dev \
+            libelf-dev \
+            libncurses5-dev \
+            libncurses5 \
+            libtinfo5 \
+            zlib1g-dev \
+            lz4 \
+            gzip \
+            zip \
+            tar \
+            curl \
+            cpio \
+            rsync \
+            kmod \
+            python3 \
+            python-is-python3 \
+            gcc-aarch64-linux-gnu \
+            gcc-arm-linux-gnueabi
+
+      - name: Setup Android Clang (r416183b)
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "${{ env.CLANG_DIR }}"
+          echo "Downloading Android Clang r416183b..."
+          curl -sSL "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-12.1.0_r26/clang-r416183b.tar.gz" -o clang.tar.gz
+          tar -zxf clang.tar.gz -C "${{ env.CLANG_DIR }}"
+          rm -f clang.tar.gz
+
+      - name: Prepare Output Directory
+        run: |
+          mkdir -p "${{ env.OUT_DIR }}"
+
+      - name: Configure Kernel (${{ env.DEFCONFIG }})
+        run: |
+          export PATH="${{ env.CLANG_DIR }}/bin:$PATH"
+          make -C "${{ env.KERNEL_DIR }}" O="${{ env.OUT_DIR }}" \
+            ARCH=arm64 \
+            LLVM=1 \
+            LLVM_IAS=1 \
+            CROSS_COMPILE=aarch64-linux-gnu- \
+            CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
+            "${{ env.DEFCONFIG }}"
+
+      - name: Build Kernel Image
+        run: |
+          set -o pipefail
+          export PATH="${{ env.CLANG_DIR }}/bin:$PATH"
+          make -C "${{ env.KERNEL_DIR }}" O="${{ env.OUT_DIR }}" \
+            -j$(nproc) \
+            ARCH=arm64 \
+            LLVM=1 \
+            LLVM_IAS=1 \
+            CROSS_COMPILE=aarch64-linux-gnu- \
+            CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
+            ${{ env.BUILD_TARGET }} 2>&1 | tee "${{ github.workspace }}/build.log"
+
+      - name: Validate Output Artifacts and Version
+        run: |
+          echo "=== Verification ==="
+          if [ ! -s "${{ env.OUT_DIR }}/arch/arm64/boot/Image" ]; then
+            echo "::error::Image file missing or empty!"
+            exit 1
+          fi
+          ls -lh "${{ env.OUT_DIR }}/arch/arm64/boot/Image"
+
+          if [ -f "${{ env.OUT_DIR }}/arch/arm64/boot/Image.gz" ]; then
+            ls -lh "${{ env.OUT_DIR }}/arch/arm64/boot/Image.gz"
+          fi
+
+          if [ ! -f "${{ env.OUT_DIR }}/include/config/kernel.release" ]; then
+            echo "::error::include/config/kernel.release missing!"
+            exit 1
+          fi
+
+          KERNELRELEASE=$(cat "${{ env.OUT_DIR }}/include/config/kernel.release")
+          echo "KERNELRELEASE: $KERNELRELEASE"
+          echo "KERNELRELEASE=$KERNELRELEASE" >> $GITHUB_ENV
+
+          if [[ "$KERNELRELEASE" =~ -dirty$ ]]; then
+            echo "::error::Kernel release contains -dirty suffix: $KERNELRELEASE"
+            exit 1
+          fi
+
+          EXPECTED="5.4.161-NevaCPS-12-9-gb17cbc51204f-tempest"
+          if [ "$KERNELRELEASE" != "$EXPECTED" ]; then
+            echo "::warning::Release ($KERNELRELEASE) differs from target ($EXPECTED)"
+          else
+            echo "Release exactly matches target: $EXPECTED"
+          fi
+
+      - name: Package Build Artifacts
+        run: |
+          mkdir -p "${{ github.workspace }}/artifacts"
+          cp "${{ env.OUT_DIR }}/arch/arm64/boot/Image" "${{ github.workspace }}/artifacts/"
+          if [ -f "${{ env.OUT_DIR }}/arch/arm64/boot/Image.gz" ]; then
+            cp "${{ env.OUT_DIR }}/arch/arm64/boot/Image.gz" "${{ github.workspace }}/artifacts/"
+          fi
+          cp "${{ env.OUT_DIR }}/.config" "${{ github.workspace }}/artifacts/kernel.config"
+          cp "${{ env.OUT_DIR }}/include/config/kernel.release" "${{ github.workspace }}/artifacts/kernel.release"
+          cp "${{ github.workspace }}/build.log" "${{ github.workspace }}/artifacts/build.log"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-${{ env.KERNELRELEASE || 'arm64' }}
+          path: ${{ github.workspace }}/artifacts/
+          if-no-files-found: error

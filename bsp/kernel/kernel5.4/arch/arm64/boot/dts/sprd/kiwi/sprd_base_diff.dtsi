@@ -1,0 +1,15 @@
+/*
+ * this file is ued to change sprd dtsi which can't be changed by overlay
+ * such as /delete-node/ /delete-property/ and alises
+ */
+
+#include "touchscreen_kiwi.dtsi"
+#include "zte_lcd.dtsi"
+#include "zte_fingerprint_kiwi.dtsi"
+#include "zte_camera_kiwi.dtsi"
+#include "zte_charger_kiwi.dtsi"
+#include "zte_audio_kiwi.dtsi"
+#include "zte_sar_kiwi.dtsi"
+#include "zte_leds_kiwi.dtsi"
+#include "zte_nfc_kiwi.dtsi"
+#include "zte_thermal_kiwi.dtsi"

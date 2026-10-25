@@ -1,0 +1,13 @@
+
+#include "zte_lcd_tongxingda_ili7807s_jdi_6p58_fhd.dtsi"
+#include "zte_lcd_dummy_mipi.dtsi"
+
+&dphy {
+	/delete-property/ sprd,ulps-disabled;
+};
+
+&panel {
+	avdd-gpio = <&ap_gpio 135 GPIO_ACTIVE_HIGH>;
+	avee-gpio = <&ap_gpio 136 GPIO_ACTIVE_HIGH>;
+	reset-gpio = <&ap_gpio 50 GPIO_ACTIVE_HIGH>;
+};

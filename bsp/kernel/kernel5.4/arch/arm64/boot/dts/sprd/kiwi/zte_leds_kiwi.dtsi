@@ -1,0 +1,39 @@
+&i2c2 {
+	clock-frequency = <400000>;
+	status = "okay";
+	aw210xx_led@20 {
+		compatible = "awinic,aw210xx_led";
+		reg = <0x20>;
+		enable-gpio = <&ap_gpio 39 0>;
+		global_current = <0xff>;
+		osc_clk = <1>;
+		br_res = <1>;
+		status = "okay";
+		aw210xx,led {
+			aw210xx,name = "aw210xx_led";
+			aw210xx,imax = <1>;
+			aw210xx,brightness = <128>;
+			aw210xx,max_brightness = <255>;
+		};
+/* add for pv&emode led test start */
+		aw210xx,red_led {
+			aw210xx,name = "red";
+			aw210xx,imax = <1>;
+			aw210xx,brightness = <255>;
+			aw210xx,max_brightness = <255>;
+		};
+		aw210xx,green_led {
+			aw210xx,name = "green";
+			aw210xx,imax = <1>;
+			aw210xx,brightness = <255>;
+			aw210xx,max_brightness = <255>;
+		};
+		aw210xx,blue_led {
+			aw210xx,name = "blue";
+			aw210xx,imax = <1>;
+			aw210xx,brightness = <255>;
+			aw210xx,max_brightness = <255>;
+		};
+/* add for pv&emode led test end */
+	};
+};
