@@ -144,6 +144,13 @@ jobs:
             CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
             ${{ env.BUILD_TARGET }} 2>&1 | tee "${{ github.workspace }}/build.log"
 
+      - name: Upload Build Log On Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-build-failure-log
+          path: ${{ github.workspace }}/build.log
+          if-no-files-found: warn
       - name: Validate Output Artifacts and Version
         run: |
           echo "=== Verification ==="
