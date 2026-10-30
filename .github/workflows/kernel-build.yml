@@ -110,6 +110,14 @@ jobs:
             CROSS_COMPILE=aarch64-linux-gnu- \
             CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
             V=1 \
+            "${{ env.DEFCONFIG }}" 2>&1 | tee "${{ github.workspace }}/config.log" || {
+              echo "::error::KCONFIG PARSE FAILED - SEE CONFIG.LOG FOR DETAILS" >&2
+              exit 1
+            }
+            CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=aarch64-linux-gnu- \
+            CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
+            V=1 \
             "${{ env.DEFCONFIG }}" 2>&1 | tee "${{ github.workspace }}/config.log"
 
       - name: Upload Configure Log On Failure
