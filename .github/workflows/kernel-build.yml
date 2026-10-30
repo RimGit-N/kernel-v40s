@@ -36,10 +36,9 @@ jobs:
       KBUILD_BUILD_HOST: GitHubActions
       KERNEL_DIR: bsp/kernel/kernel5.4
       OUT_DIR: ${{ github.workspace }}/out
-      CLANG_DIR: ${{ github.workspace }}/toolchain/clang-r416183b
+      NEUTRON_DIR: ${{ github.workspace }}/toolchain/neutron-clang
       DEFCONFIG: ${{ inputs.defconfig || 'sprd_qogirl6_defconfig' }}
       BUILD_TARGET: ${{ inputs.build_target || 'Image Image.gz' }}
-
     steps:
       - name: Checkout Kernel Source
         uses: actions/checkout@v4
@@ -52,13 +51,12 @@ jobs:
           curl -LSs "https://raw.githubusercontent.com/manipvlator/KernelSU/refs/heads/main/kernel/setup.sh" | bash -s main
           # Verify setup
           ls -ld drivers/kernelsu
-      - name: Cache Android Clang Toolchain
-        id: cache-toolchain
+      - name: Cache Neutron Clang
+        id: cache-neutron
         uses: actions/cache@v4
         with:
-          path: ${{ env.CLANG_DIR }}
-          key: clang-r416183b-v1
-
+          path: ${{ env.NEUTRON_DIR }}
+          key: neutron-clang-latest-v1
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
@@ -86,15 +84,15 @@ jobs:
             gcc-aarch64-linux-gnu \
             gcc-arm-linux-gnueabi
 
-      - name: Setup Android Clang (r416183b)
-        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+      - name: Setup Neutron Clang
+        if: steps.cache-neutron.outputs.cache-hit != 'true'
         run: |
-          mkdir -p "${{ env.CLANG_DIR }}"
-          echo "Downloading Android Clang r416183b..."
-          curl -sSL "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-12.1.0_r26/clang-r416183b.tar.gz" -o clang.tar.gz
-          tar -zxf clang.tar.gz -C "${{ env.CLANG_DIR }}"
-          rm -f clang.tar.gz
-
+          mkdir -p "${{ env.NEUTRON_DIR }}"
+          cd "${{ env.NEUTRON_DIR }}"
+          curl -LO "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman"
+          chmod +x antman
+          ./antman --sync=latest
+          ./antman --patch=glibc || true
       - name: Prepare Output Directory
         run: |
           mkdir -p "${{ env.OUT_DIR }}"
@@ -102,18 +100,17 @@ jobs:
       - name: Configure Kernel (${{ env.DEFCONFIG }})
         run: |
           set -o pipefail
-          export PATH="${{ env.CLANG_DIR }}/bin:$PATH"
+          export PATH="${{ env.NEUTRON_DIR }}/bin:$PATH"
           make -C "${{ env.KERNEL_DIR }}" O="${{ env.OUT_DIR }}" \
             ARCH=arm64 \
+            CC=clang \
             LLVM=1 \
             LLVM_IAS=1 \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
             V=1 \
-            "${{ env.DEFCONFIG }}" || {
-              echo "::error::Kconfig failed! Outputting log..."
-              exit 1
-            }
+            "${{ env.DEFCONFIG }}"
 
       - name: Upload Configure Log On Failure
         if: failure()
@@ -126,12 +123,14 @@ jobs:
       - name: Build Kernel Image
         run: |
           set -o pipefail
-          export PATH="${{ env.CLANG_DIR }}/bin:$PATH"
+          export PATH="${{ env.NEUTRON_DIR }}/bin:$PATH"
           make -C "${{ env.KERNEL_DIR }}" O="${{ env.OUT_DIR }}" \
             -j$(nproc) \
             ARCH=arm64 \
+            CC=clang \
             LLVM=1 \
             LLVM_IAS=1 \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
             ${{ env.BUILD_TARGET }} 2>&1 | tee "${{ github.workspace }}/build.log"
