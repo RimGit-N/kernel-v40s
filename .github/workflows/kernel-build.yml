@@ -6,15 +6,14 @@ on:
       defconfig:
         description: 'Kernel Defconfig'
         required: true
-        default: 'sprd_sharkl5Pro_defconfig'
+        default: 'sprd_qogirl6_defconfig'
         type: choice
         options:
+          - sprd_qogirl6_defconfig
           - sprd_sharkl5Pro_defconfig
-          - gki_defconfig
-          - unisoc_fuzz_ums512_defconfig
       build_target:
-        description: 'Kernel Image Target'
-        required: true
+        description: 'Target to build (e.g. Image, Image.gz)'
+        required: false
         default: 'Image Image.gz'
         type: string
   push:
@@ -25,7 +24,6 @@ on:
       - 'README.md'
       - '.gitignore'
       - 'docs/**'
-
 jobs:
   build:
     name: Build Kernel ARM64
@@ -39,7 +37,7 @@ jobs:
       KERNEL_DIR: bsp/kernel/kernel5.4
       OUT_DIR: ${{ github.workspace }}/out
       CLANG_DIR: ${{ github.workspace }}/toolchain/clang-r416183b
-      DEFCONFIG: ${{ inputs.defconfig || 'sprd_sharkl5Pro_defconfig' }}
+      DEFCONFIG: ${{ inputs.defconfig || 'sprd_qogirl6_defconfig' }}
       BUILD_TARGET: ${{ inputs.build_target || 'Image Image.gz' }}
 
     steps:

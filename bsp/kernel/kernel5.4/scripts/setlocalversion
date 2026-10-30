@@ -50,10 +50,10 @@ if test $# -gt 0 -o ! -d "$srctree"; then
 fi
 
 if [ -z "$android_release" ]; then
-	android_release="android12"
+	android_release=""
 fi
 if [ -z "$kmi_generation" ]; then
-	kmi_generation="9"
+	kmi_generation=""
 fi
 
 scm_version()
@@ -74,26 +74,13 @@ scm_version()
 	if git rev-parse --git-dir >/dev/null 2>&1 &&
 	   head=$(git rev-parse --verify HEAD 2>/dev/null); then
 
-		if [ -n "$android_release" ] && [ -n "$kmi_generation" ]; then
-			printf '%s' "-$android_release-$kmi_generation"
-		elif [ -n "$android_release" ]; then
-			printf '%s' "-$android_release"
-		fi
-
-		# Kernel branding
-		printf '%s' "-NyaNeva-KSUN"
-
-		# Return without dirty tag
+		# Release string persis target referensi + NyaNeva-KSUN
+		printf '%s' "-gc21980c6200b-NyaNeva-KSUN"
 		return
 	fi
 
 	# Fallback when git repo is not initialized
-	if [ -n "$android_release" ] && [ -n "$kmi_generation" ]; then
-		printf '%s' "-$android_release-$kmi_generation"
-	elif [ -n "$android_release" ]; then
-		printf '%s' "-$android_release"
-	fi
-	printf '%s' "-NyaNeva-KSUN"
+	printf '%s' "-gc21980c6200b-NyaNeva-KSUN"
 	return
 	# Check for mercurial and a mercurial repo.
 	if test -d .hg && hgid=`hg id 2>/dev/null`; then
