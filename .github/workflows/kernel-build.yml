@@ -121,10 +121,15 @@ jobs:
             HOSTLD=/usr/bin/ld \
             HOSTAR=/usr/bin/ar \
             CC=clang \
+            LD=ld.lld \
+            AR=llvm-ar \
+            NM=llvm-nm \
+            OBJCOPY=llvm-objcopy \
+            OBJDUMP=llvm-objdump \
+            STRIP=llvm-strip \
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=aarch64-linux-android- \
             CROSS_COMPILE_COMPAT=arm-linux-androideabi- \
-            LD=ld.lld \
             "${{ env.DEFCONFIG }}" 2>&1 | tee "${{ github.workspace }}/config.log" || {
               echo "::error::KCONFIG PARSE FAILED - SEE CONFIG.LOG FOR DETAILS" >&2
               exit 1
@@ -152,10 +157,15 @@ jobs:
             HOSTLD=/usr/bin/ld \
             HOSTAR=/usr/bin/ar \
             CC=clang \
+            LD=ld.lld \
+            AR=llvm-ar \
+            NM=llvm-nm \
+            OBJCOPY=llvm-objcopy \
+            OBJDUMP=llvm-objdump \
+            STRIP=llvm-strip \
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=aarch64-linux-android- \
             CROSS_COMPILE_COMPAT=arm-linux-androideabi- \
-            LD=ld.lld \
             ${{ env.BUILD_TARGET }} 2>&1 | tee "${{ github.workspace }}/build.log"
       - name: Print Build Error Tail
         if: failure()
