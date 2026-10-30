@@ -1,0 +1,91 @@
+#
+# Touchscreen driver configuration
+#
+menuconfig TOUCHSCREEN_VENDOR
+	tristate "Touchscreens"
+	default n
+	help
+	  Say Y here, and a list of supported touchscreens will be displayed.
+	  This option doesn't affect the kernel.
+
+	  If unsure, say n.
+
+if TOUCHSCREEN_VENDOR
+
+source "drivers/vendor/common/touchscreen/hxchipset_v2/Kconfig"
+source "drivers/vendor/common/touchscreen/hxchipset_v3/Kconfig"
+source "drivers/vendor/common/touchscreen/chipone_tddi/Kconfig"
+source "drivers/vendor/common/touchscreen/ilitek_tddi_9881x/Kconfig"
+source "drivers/vendor/common/touchscreen/tlsc6x_v3/Kconfig"
+source "drivers/vendor/common/touchscreen/NVT_Touch_HostDL/Kconfig"
+source "drivers/vendor/common/touchscreen/gcore_ts/Kconfig"
+source "drivers/vendor/common/touchscreen/goodix_berlin_driver_v2/Kconfig"
+source "drivers/vendor/common/touchscreen/omnivision_tcm/Kconfig"
+source "drivers/vendor/common/touchscreen/chipone_tddi_v2/Kconfig"
+source "drivers/vendor/common/touchscreen/chipone_tddi_v3/Kconfig"
+source "drivers/vendor/common/touchscreen/focaltech_touch_V3_3/Kconfig"
+
+config TS_FIRMWARE
+	string "config board firmware folder"
+
+config TP_BSC_CALIBRATION
+        bool "tp bsc calibration, synaptics_tcm driver need this node"
+		default n
+		help
+		This enables tp bsc calibration.
+
+config TP_DETECT_BY_LCDINFO
+        bool "tp ic detected by lcd information"
+		default n
+		help
+		This enables support for tp ic detected by lcd information.
+
+config DRM_PANEL_NOTIFIER
+	bool "add qcom drm panel support"
+	default n
+	help
+	  Say Y here to enable debug tools.
+
+	  If unsure, say N.
+
+config TPD_UFP_MAC
+	bool "tp under fingerprint status machine"
+	default n
+	help
+	  Say Y here if you want to have a under fingerprint status machine
+	  If unsure, say N.
+config SCREEN_ON_TEMP_SUPPORT
+	bool "lcd has a temp on when off to aod"
+	depends on TPD_UFP_MAC
+	default n
+	help
+		Say y here if your lcd has a temp on when off to aod
+		if unsure, say n.
+config JITTER_PIXEL
+	int "set touch jitter pixel restriction"
+	range 0 30
+	default 0
+	help
+	  if set JITTER_PIXEL,  the second point can be report only when move more than JITTER_PIXEL pixels.
+config USER_HAL_READ_FW
+	bool "tp firmware upgrade user tp_fw_upgrade upgrade firmware"
+	default n
+	help
+	  Say Y here if you want to user tp_fw_upgrade upgrade firmware
+	  If unsure, say N.
+config GET_NOISE_USER_BIG_BUFFER
+	bool "get tp noise user big buffer"
+	default n
+	help
+	  Say Y here if you want to get tp noise user big buffer
+	  If unsure, say N.
+
+config TS_POINT_REPORT_CHECK
+	bool "all point clean when tp irq timeout"
+	default n
+	help
+	  Say Y here to enable .
+	  If unsure, say N.
+
+endif
+

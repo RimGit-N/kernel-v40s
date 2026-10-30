@@ -1,0 +1,8 @@
+
+menuconfig VENDOR_ZTE_LOG_EXCEPTION
+	bool "zte log exception"
+	default n
+	help
+	  Say Y here, if supported zte log exception
+
+

@@ -146,6 +146,3 @@ x509.genkey
 
 # Clang's compilation database file
 
-# zte kernel
-include/vendor
-drivers/vendor

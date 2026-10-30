@@ -1,0 +1,7 @@
+config SAR_SENSOR_AW9610X
+	bool "SAR_SENSOR_AW9610X"
+		depends on I2C
+		default n
+		help
+		  Say Y here if you have aw9610x sar sensor.
+		  If unsure, say N.

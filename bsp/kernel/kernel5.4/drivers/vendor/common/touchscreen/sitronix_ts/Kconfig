@@ -1,0 +1,11 @@
+#
+# sitronix Touchscreen driver configuration
+#
+
+config TOUCHSCREEN_SITRONIX_TS
+    bool "sitronix Touchscreen"
+    depends on I2C
+    default n
+    help
+      Say Y here if you have sitronix touch panel.
+      If unsure, say N.
