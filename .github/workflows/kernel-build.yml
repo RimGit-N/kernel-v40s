@@ -45,18 +45,18 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Setup KernelSU-Next (manipvlator)
+      - name: Setup Kernel Tree (Vanilla)
         run: |
-          cd "${{ env.KERNEL_DIR }}"
-          curl -LSs "https://raw.githubusercontent.com/manipvlator/KernelSU/refs/heads/main/kernel/setup.sh" | bash -s main
-          # Verify setup
-          ls -ld drivers/kernelsu
-      - name: Cache Neutron Clang
-        id: cache-neutron
+          echo "Building vanilla kernel (no KSU / SUSFS injection)."
+      - name: Cache Toolchains
+        id: cache-toolchain
         uses: actions/cache@v4
         with:
-          path: ${{ env.NEUTRON_DIR }}
-          key: neutron-clang-latest-v1
+          path: |
+            ${{ env.NEUTRON_DIR }}
+            ${{ github.workspace }}/toolchain/gcc64
+            ${{ github.workspace }}/toolchain/gcc32
+          key: toolchain-neutron-gcc-v1
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
@@ -84,15 +84,27 @@ jobs:
             gcc-aarch64-linux-gnu \
             gcc-arm-linux-gnueabi
 
-      - name: Setup Neutron Clang
-        if: steps.cache-neutron.outputs.cache-hit != 'true'
+      - name: Setup Toolchains (Neutron Clang + AOSP GCC)
         run: |
-          mkdir -p "${{ env.NEUTRON_DIR }}"
-          cd "${{ env.NEUTRON_DIR }}"
-          curl -LO "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman"
-          chmod +x antman
-          ./antman --sync=latest
-          ./antman --patch=glibc || true
+          mkdir -p "${{ github.workspace }}/toolchain"
+          cd "${{ github.workspace }}/toolchain"
+
+          if [ ! -d "${{ env.NEUTRON_DIR }}/bin" ]; then
+            mkdir -p "${{ env.NEUTRON_DIR }}"
+            cd "${{ env.NEUTRON_DIR }}"
+            curl -LO "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman"
+            chmod +x antman
+            ./antman --sync=latest
+            ./antman --patch=glibc || true
+          fi
+
+          cd "${{ github.workspace }}/toolchain"
+          if [ ! -d "gcc64" ]; then
+            git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git gcc64
+          fi
+          if [ ! -d "gcc32" ]; then
+            git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git gcc32
+          fi
       - name: Prepare Output Directory
         run: |
           mkdir -p "${{ env.OUT_DIR }}"
@@ -105,16 +117,18 @@ jobs:
       - name: Configure Kernel (${{ env.DEFCONFIG }})
         run: |
           set -o pipefail
-          export PATH="${{ env.NEUTRON_DIR }}/bin:$PATH"
+          export PATH="${{ env.NEUTRON_DIR }}/bin:${{ github.workspace }}/toolchain/gcc64/bin:${{ github.workspace }}/toolchain/gcc32/bin:$PATH"
+          export HOSTCC=/usr/bin/gcc
+          export HOSTCXX=/usr/bin/g++
           make -C "${{ env.KERNEL_DIR }}" O="${{ env.OUT_DIR }}" \
             ARCH=arm64 \
             CC=clang \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=aarch64-linux-android- \
+            CROSS_COMPILE_COMPAT=arm-linux-androideabi- \
+            LD=ld.lld \
             LLVM=1 \
             LLVM_IAS=1 \
-            CLANG_TRIPLE=aarch64-linux-gnu- \
-            CROSS_COMPILE=aarch64-linux-gnu- \
-            CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
-            V=1 \
             "${{ env.DEFCONFIG }}" 2>&1 | tee "${{ github.workspace }}/config.log" || {
               echo "::error::KCONFIG PARSE FAILED - SEE CONFIG.LOG FOR DETAILS" >&2
               exit 1
@@ -128,22 +142,23 @@ jobs:
           path: ${{ github.workspace }}/config.log
           if-no-files-found: warn
 
-
       - name: Build Kernel Image
         run: |
           set -o pipefail
-          export PATH="${{ env.NEUTRON_DIR }}/bin:$PATH"
+          export PATH="${{ env.NEUTRON_DIR }}/bin:${{ github.workspace }}/toolchain/gcc64/bin:${{ github.workspace }}/toolchain/gcc32/bin:$PATH"
+          export HOSTCC=/usr/bin/gcc
+          export HOSTCXX=/usr/bin/g++
           make -C "${{ env.KERNEL_DIR }}" O="${{ env.OUT_DIR }}" \
-            -j$(nproc) \
+            -j$(nproc --all) \
             ARCH=arm64 \
             CC=clang \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=aarch64-linux-android- \
+            CROSS_COMPILE_COMPAT=arm-linux-androideabi- \
+            LD=ld.lld \
             LLVM=1 \
             LLVM_IAS=1 \
-            CLANG_TRIPLE=aarch64-linux-gnu- \
-            CROSS_COMPILE=aarch64-linux-gnu- \
-            CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
             ${{ env.BUILD_TARGET }} 2>&1 | tee "${{ github.workspace }}/build.log"
-
       - name: Print Build Error Tail
         if: failure()
         run: |
