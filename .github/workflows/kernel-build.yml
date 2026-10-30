@@ -110,7 +110,7 @@ jobs:
             CROSS_COMPILE=aarch64-linux-gnu- \
             CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
             V=1 \
-            "${{ env.DEFCONFIG }}"
+            "${{ env.DEFCONFIG }}" 2>&1 | tee "${{ github.workspace }}/config.log"
 
       - name: Upload Configure Log On Failure
         if: failure()
