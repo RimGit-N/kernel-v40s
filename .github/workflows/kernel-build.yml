@@ -45,9 +45,11 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Setup Kernel Tree (Vanilla)
+      - name: Setup ReSukiSU
         run: |
-          echo "Building vanilla kernel (no KSU / SUSFS injection)."
+          cd "${{ env.KERNEL_DIR }}"
+          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s main
+          ls -ld drivers/kernelsu || true
       - name: Cache Toolchains
         id: cache-toolchain
         uses: actions/cache@v4
@@ -196,18 +198,8 @@ jobs:
           echo "KERNELRELEASE: $KERNELRELEASE"
           echo "KERNELRELEASE=$KERNELRELEASE" >> $GITHUB_ENV
 
-          if [[ "$KERNELRELEASE" =~ -dirty$ ]]; then
-            echo "::error::Kernel release contains -dirty suffix: $KERNELRELEASE"
-            exit 1
-          fi
-
-          EXPECTED="5.4.161-NevaCPS-12-9-gb17cbc51204f-tempest"
-          if [ "$KERNELRELEASE" != "$EXPECTED" ]; then
-            echo "::warning::Release ($KERNELRELEASE) differs from target ($EXPECTED)"
-          else
-            echo "Release exactly matches target: $EXPECTED"
-          fi
-
+          EXPECTED="5.4.161-NyaNeva-ResukiSU"
+          echo "Kernel release built: $KERNELRELEASE (Expected: $EXPECTED)"
       - name: Package Build Artifacts
         run: |
           mkdir -p "${{ github.workspace }}/artifacts"

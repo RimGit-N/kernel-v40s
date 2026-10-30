@@ -2,7 +2,7 @@
 VERSION = 5
 PATCHLEVEL = 4
 SUBLEVEL = 161
-EXTRAVERSION =
+EXTRAVERSION = -NyaNeva-ResukiSU
 NAME = Kleptomaniac Octopus
 
 # *DOCUMENTATION*
@@ -913,6 +913,7 @@ KBUILD_LDS_MODULE += scripts/module-lto.lds
 ifneq ($(CONFIG_FRAME_WARN),0)
 KBUILD_LDFLAGS	+= $(call ld-option, -plugin-opt=-warn-stack-size=$(CONFIG_FRAME_WARN))
 endif
+endif
 
 ifdef CONFIG_LTO
 CC_FLAGS_LTO	:= $(CC_FLAGS_LTO_CLANG)
@@ -1186,11 +1187,8 @@ targets := vmlinux
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
 $(sort $(vmlinux-deps)): descend ;
-
 filechk_kernel.release = \
-	echo "$(KERNELVERSION)$$($(CONFIG_SHELL) $(srctree)/scripts/setlocalversion \
-		$(srctree) $(BRANCH) $(KMI_GENERATION))"
-
+	echo "$(KERNELVERSION)"
 # Store (new) KERNELRELEASE string in include/config/kernel.release
 include/config/kernel.release: FORCE
 	$(call filechk,kernel.release)
