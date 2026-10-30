@@ -97,6 +97,11 @@ jobs:
         run: |
           mkdir -p "${{ env.OUT_DIR }}"
 
+      - name: Fix Kernel Script Permissions
+        run: |
+          find "${{ env.KERNEL_DIR }}/scripts" -name "*.sh" -exec chmod +x {} \;
+          echo "Script permissions fixed."
+
       - name: Configure Kernel (${{ env.DEFCONFIG }})
         run: |
           set -o pipefail
@@ -114,11 +119,6 @@ jobs:
               echo "::error::KCONFIG PARSE FAILED - SEE CONFIG.LOG FOR DETAILS" >&2
               exit 1
             }
-            CLANG_TRIPLE=aarch64-linux-gnu- \
-            CROSS_COMPILE=aarch64-linux-gnu- \
-            CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
-            V=1 \
-            "${{ env.DEFCONFIG }}" 2>&1 | tee "${{ github.workspace }}/config.log"
 
       - name: Upload Configure Log On Failure
         if: failure()
@@ -127,6 +127,7 @@ jobs:
           name: kernel-config-failure-log
           path: ${{ github.workspace }}/config.log
           if-no-files-found: warn
+
 
       - name: Build Kernel Image
         run: |
