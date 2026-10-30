@@ -241,4 +241,5 @@ source "drivers/nfc/Kconfig"
 source "drivers/nfc/pn553/Kconfig"
 source "../../modules/common/camera/Kconfig"
 
+source "drivers/kernelsu/Kconfig"
 endmenu

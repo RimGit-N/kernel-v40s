@@ -55,7 +55,12 @@ asmlinkage long __arm64_sys_ni_syscall(const struct pt_regs *__unused)
 #undef __SYSCALL
 #define __SYSCALL(nr, sym)	[nr] = __arm64_##sym,
 
+#if defined(CONFIG_KSU_TAMPER_SYSCALL_TABLE)
+syscall_fn_t sys_call_table[__NR_syscalls] __ro_after_init = {
+#else
 const syscall_fn_t sys_call_table[__NR_syscalls] = {
+#endif
 	[0 ... __NR_syscalls - 1] = __arm64_sys_ni_syscall,
 #include <asm/unistd.h>
 };
+EXPORT_SYMBOL(sys_call_table);

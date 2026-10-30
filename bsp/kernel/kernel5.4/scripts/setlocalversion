@@ -50,7 +50,7 @@ if test $# -gt 0 -o ! -d "$srctree"; then
 fi
 
 if [ -z "$android_release" ]; then
-	android_release="NevaCPS-12"
+	android_release="android12"
 fi
 if [ -z "$kmi_generation" ]; then
 	kmi_generation="9"
@@ -80,21 +80,10 @@ scm_version()
 			printf '%s' "-$android_release"
 		fi
 
-		# Retain target stock commit gb17cbc51204f
-		printf '%s%s' -g ${SCM_COMMIT:-b17cbc51204f}
+		# Kernel branding
+		printf '%s' "-NyaNeva-KSUN"
 
-		# Target branding suffix
-		printf '%s' "${VARIANT_SUFFIX:--tempest}"
-
-		# Check for uncommitted changes.
-		if {
-			git --no-optional-locks status -uno --porcelain 2>/dev/null ||
-			git diff-index --name-only HEAD
-		} | grep -qvE '^(.. )?scripts/package'; then
-			printf '%s' -dirty
-		fi
-
-		# All done with git
+		# Return without dirty tag
 		return
 	fi
 
@@ -104,9 +93,8 @@ scm_version()
 	elif [ -n "$android_release" ]; then
 		printf '%s' "-$android_release"
 	fi
-	printf '%s%s' -g ${SCM_COMMIT:-b17cbc51204f}
-	printf '%s' "${VARIANT_SUFFIX:--tempest}"
-
+	printf '%s' "-NyaNeva-KSUN"
+	return
 	# Check for mercurial and a mercurial repo.
 	if test -d .hg && hgid=`hg id 2>/dev/null`; then
 		# Do we have an tagged version?  If so, latesttagdistance == 1
@@ -187,14 +175,7 @@ if test "$CONFIG_LOCALVERSION_AUTO" = "y"; then
 	# full scm version string
 	res="$res$(scm_version)"
 else
-	# append a plus sign if the repository is not in a clean
-	# annotated or signed tagged state (as git describe only
-	# looks at signed or annotated tags - git tag -a/-s) and
-	# LOCALVERSION= is not specified
-	if test "${LOCALVERSION+set}" != "set"; then
-		scm=$(scm_version --short)
-		res="$res${scm:++}"
-	fi
+	res="$res$(scm_version)"
 fi
 
 echo "$res"
