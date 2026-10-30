@@ -52,9 +52,8 @@ jobs:
         run: |
           cd "${{ env.KERNEL_DIR }}"
           curl -LSs "https://raw.githubusercontent.com/manipvlator/KernelSU/refs/heads/main/kernel/setup.sh" | bash -s main
-          cd drivers
-          ln -sf ../KernelSU/kernel kernelsu
-
+          # Verify setup
+          ls -ld drivers/kernelsu
       - name: Cache Android Clang Toolchain
         id: cache-toolchain
         uses: actions/cache@v4
@@ -113,7 +112,10 @@ jobs:
             CROSS_COMPILE=aarch64-linux-gnu- \
             CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
             V=1 \
-            "${{ env.DEFCONFIG }}" 2>&1 | tee "${{ github.workspace }}/config.log"
+            "${{ env.DEFCONFIG }}" || {
+              echo "::error::Kconfig failed! Outputting log..."
+              exit 1
+            }
 
       - name: Upload Configure Log On Failure
         if: failure()

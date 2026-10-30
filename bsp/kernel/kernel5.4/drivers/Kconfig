@@ -239,7 +239,6 @@ source "drivers/vendor/common/Kconfig"
 source "drivers/vendor/soc/sprd/Kconfig"
 source "drivers/nfc/Kconfig"
 source "drivers/nfc/pn553/Kconfig"
-source "../../modules/common/camera/Kconfig"
+# source "../../modules/common/camera/Kconfig"
 
-source "drivers/kernelsu/Kconfig"
 endmenu
