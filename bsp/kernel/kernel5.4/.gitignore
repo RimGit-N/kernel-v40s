@@ -36,7 +36,8 @@
 *.o
 *.o.*
 *.patch
-*.s
+!*.[sS]
+!*.lds.S
 *.so
 *.so.dbg
 *.su
