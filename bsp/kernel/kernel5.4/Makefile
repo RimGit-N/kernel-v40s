@@ -909,10 +909,9 @@ KBUILD_LDFLAGS_MODULE += $(LD_FLAGS_LTO_CLANG)
 KBUILD_LDS_MODULE += scripts/module-lto.lds
 
 # Check for frame size exceeding threshold during prolog/epilog insertion.
+# -plugin-opt=-warn-stack-size was removed in LLD >= 13.
 ifneq ($(CONFIG_FRAME_WARN),0)
-KBUILD_LDFLAGS	+= -plugin-opt=-warn-stack-size=$(CONFIG_FRAME_WARN)
-KBUILD_LDFLAGS	+= -fatal-warnings
-endif
+KBUILD_LDFLAGS	+= $(call ld-option, -plugin-opt=-warn-stack-size=$(CONFIG_FRAME_WARN))
 endif
 
 ifdef CONFIG_LTO
