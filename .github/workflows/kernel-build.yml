@@ -58,7 +58,7 @@ jobs:
             ${{ env.NEUTRON_DIR }}
             ${{ github.workspace }}/toolchain/gcc64
             ${{ github.workspace }}/toolchain/gcc32
-          key: toolchain-neutron-gcc-v1
+          key: toolchain-neutron-30072026-v1
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
@@ -86,20 +86,14 @@ jobs:
             gcc-aarch64-linux-gnu \
             gcc-arm-linux-gnueabi
 
-      - name: Setup Toolchains (Neutron Clang + AOSP GCC)
+      - name: Download Neutron-Clang Toolchain
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
         run: |
-          mkdir -p "${{ github.workspace }}/toolchain"
-          cd "${{ github.workspace }}/toolchain"
-
-          if [ ! -d "${{ env.NEUTRON_DIR }}/bin" ]; then
-            mkdir -p "${{ env.NEUTRON_DIR }}"
-            cd "${{ env.NEUTRON_DIR }}"
-            curl -LO "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman"
-            chmod +x antman
-            ./antman --sync=latest
-            ./antman --patch=glibc || true
-          fi
-
+          mkdir -p "${{ env.NEUTRON_DIR }}"
+          cd "${{ env.NEUTRON_DIR }}"
+          wget https://github.com/Neutron-Toolchains/clang-build-catalogue/releases/download/30072026/neutron-clang-30072026.tar.zst
+          tar -xf neutron-clang-30072026.tar.zst
+          rm -rf neutron-clang-30072026.tar.zst
           cd "${{ github.workspace }}/toolchain"
           if [ ! -d "gcc64" ]; then
             git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git gcc64
