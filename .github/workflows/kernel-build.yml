@@ -105,8 +105,8 @@ jobs:
 
       - name: Fix Kernel Script Permissions
         run: |
-          find "${{ env.KERNEL_DIR }}/scripts" -name "*.sh" -exec chmod +x {} \;
-          echo "Script permissions fixed."
+          find "${{ env.KERNEL_DIR }}" -name "*.sh" -exec chmod +x {} \;
+          echo "All script permissions fixed."
 
       - name: Configure Kernel (${{ env.DEFCONFIG }})
         run: |
