@@ -27,7 +27,7 @@ on:
 jobs:
   build:
     name: Build Kernel ARM64
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 180
 
     env:
@@ -58,7 +58,7 @@ jobs:
             ${{ env.NEUTRON_DIR }}
             ${{ github.workspace }}/toolchain/gcc64
             ${{ github.workspace }}/toolchain/gcc32
-          key: toolchain-neutron-30072026-v1
+          key: toolchain-neutron-30072026-u24-v1
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
@@ -118,13 +118,15 @@ jobs:
           export HOSTCXX=/usr/bin/g++
           make -C "${{ env.KERNEL_DIR }}" O="${{ env.OUT_DIR }}" \
             ARCH=arm64 \
+            HOSTCC=/usr/bin/gcc \
+            HOSTCXX=/usr/bin/g++ \
+            HOSTLD=/usr/bin/ld \
+            HOSTAR=/usr/bin/ar \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=aarch64-linux-android- \
             CROSS_COMPILE_COMPAT=arm-linux-androideabi- \
             LD=ld.lld \
-            LLVM=1 \
-            LLVM_IAS=1 \
             "${{ env.DEFCONFIG }}" 2>&1 | tee "${{ github.workspace }}/config.log" || {
               echo "::error::KCONFIG PARSE FAILED - SEE CONFIG.LOG FOR DETAILS" >&2
               exit 1
@@ -147,13 +149,15 @@ jobs:
           make -C "${{ env.KERNEL_DIR }}" O="${{ env.OUT_DIR }}" \
             -j$(nproc --all) \
             ARCH=arm64 \
+            HOSTCC=/usr/bin/gcc \
+            HOSTCXX=/usr/bin/g++ \
+            HOSTLD=/usr/bin/ld \
+            HOSTAR=/usr/bin/ar \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=aarch64-linux-android- \
             CROSS_COMPILE_COMPAT=arm-linux-androideabi- \
             LD=ld.lld \
-            LLVM=1 \
-            LLVM_IAS=1 \
             ${{ env.BUILD_TARGET }} 2>&1 | tee "${{ github.workspace }}/build.log"
       - name: Print Build Error Tail
         if: failure()
